@@ -1,0 +1,23 @@
+# Binários
+bin/
+*.exe
+
+# Arquivos temporários do Go
+*.test
+*.out
+
+# Dependências
+vendor/
+
+# Arquivos do sistema
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
