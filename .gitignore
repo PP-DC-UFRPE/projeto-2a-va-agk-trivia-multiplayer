@@ -1,7 +1,3 @@
-# Binários
-bin/
-*.exe
-
 # Arquivos temporários do Go
 *.test
 *.out
