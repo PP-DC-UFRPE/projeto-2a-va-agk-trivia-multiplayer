@@ -1,4 +1,3 @@
-// entry point do cliente CLI/GUI
 package main
 
 import (
@@ -10,58 +9,88 @@ import (
 	"strings"
 )
 
-type Question struct {  
-	Type    string   `json:"type"`
+type Mensagem struct {
+	Tipo string `json:"tipo"`
+}
+
+type Pergunta struct {
 	ID      int      `json:"id"`
-	Text    string   `json:"text"`
-	Options []string `json:"options"`
+	Texto   string   `json:"texto"`
+	Opcoes  []string `json:"opcoes"`
+}
+
+type Placar struct {
+	Pontuacoes []struct {
+		Player string `json:"player"`
+		Pontos  int    `json:"pontos"`
+	} `json:"pontuacoes"`
 }
 
 func main() {
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Print("Seu nome: ")
-	name, _ := reader.ReadString('\n')
-	name = strings.TrimSpace(name)
-
+	leitura := bufio.NewReader(os.Stdin)
 	fmt.Print("IP do servidor (ex: 127.0.0.1:8080): ")
-	addr, _ := reader.ReadString('\n')
-	addr = strings.TrimSpace(addr)
+	endereco, _ := leitura.ReadString('\n')
+	endereco = strings.TrimSpace(endereco)
 
-	conn, err := net.Dial("tcp", addr)
+	conn, err := net.Dial("tcp", endereco)
 	if err != nil {
 		panic(err)
 	}
 	defer conn.Close()
 	fmt.Println("Conectado ao servidor.")
 
+	var nome string
+
 	for {
 		msg, err := bufio.NewReader(conn).ReadBytes('\n')
 		if err != nil {
+			fmt.Println("Conexão perdida com o servidor.")
 			break
 		}
 
-		var question Question
-		if err := json.Unmarshal(msg, &question); err != nil {
+		var mensagemBase Mensagem
+		if err := json.Unmarshal(msg, &mensagemBase); err != nil {
 			continue
 		}
 
-		fmt.Printf("\n📢 Pergunta %d: %s\n", question.ID, question.Text)
-		for _, opt := range question.Options {
-			fmt.Println(opt)
+		switch mensagemBase.Tipo {
+		case "nome_requisicao":
+			fmt.Print("Seu nome: ")
+			nome, _ = leitura.ReadString('\n')
+			nome = strings.TrimSpace(nome)
+			conn.Write([]byte(nome + "\n"))
+			fmt.Println("Aguardando outros jogadores...")
+
+		case "pergunta":
+			var pergunta Pergunta
+			json.Unmarshal(msg, &pergunta)
+
+			fmt.Printf("\n📢 Pergunta %d: %s\n", pergunta.ID, pergunta.Texto)
+			for _, opt := range pergunta.Opcoes {
+				fmt.Println(opt)
+			}
+
+			fmt.Print("Sua resposta (A/B/C/D): ")
+			resp, _ := leitura.ReadString('\n')
+			resp = strings.TrimSpace(resp)
+
+			resposta := map[string]interface{}{
+				"tipo":   "resposta",
+				"id":     pergunta.ID,
+				"opcao":  strings.ToUpper(resp),
+			}
+			ansBytes, _ := json.Marshal(resposta)
+			conn.Write(append(ansBytes, '\n'))
+
+		case "placar":
+			var placar Placar
+			json.Unmarshal(msg, &placar)
+
+			fmt.Println("\n--- PLACAR ---")
+			for _, score := range placar.Pontuacoes {
+				fmt.Printf("%s: %d pontos\n", score.Player, score.Pontos)
+			}
+			fmt.Println("--------------")
 		}
-
-		fmt.Print("Sua resposta (A/B/C/D): ")
-		resp, _ := reader.ReadString('\n')
-		resp = strings.TrimSpace(resp)
-
-		answer := map[string]interface{}{
-			"type":   "answer",
-			"id":     question.ID,
-			"player": name,
-			"option": strings.ToUpper(resp),
-		}
-
-		ansBytes, _ := json.Marshal(answer)
-		conn.Write(append(ansBytes, '\n'))
 	}
 }
