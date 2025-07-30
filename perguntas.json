@@ -1,0 +1,102 @@
+[
+  {
+    "enunciado": "Qual o planeta mais próximo do Sol?",
+    "alternativas": ["Vênus", "Marte", "Mercúrio", "Terra"],
+    "resposta_correta": "Mercúrio"
+  },
+  {
+    "enunciado": "Qual o nome do processo pelo qual as plantas usam a luz do sol para criar seu próprio alimento?",
+    "alternativas": ["Respiração celular", "Transpiração", "Fotossíntese", "Osmose"],
+    "resposta_correta": "Fotossíntese"
+  },
+  {
+    "enunciado": "Quem é o autor da famosa obra 'Dom Quixote'?",
+    "alternativas": ["William Shakespeare", "Dante Alighieri", "Machado de Assis", "Miguel de Cervantes"],
+    "resposta_correta": "Miguel de Cervantes"
+  },
+  {
+    "enunciado": "No universo de Harry Potter, qual das seguintes opções NÃO é uma das Relíquias da Morte?",
+    "alternativas": ["A Varinha das Varinhas", "A Pedra da Ressurreição", "O Pomo de Ouro", "A Capa da Invisibilidade"],
+    "resposta_correta": "O Pomo de Ouro"
+  },
+  {
+    "enunciado": "Qual linguagem de programação foi criada por James Gosling na Sun Microsystems?",
+    "alternativas": ["Python", "C++", "Java", "Go"],
+    "resposta_correta": "Java"
+  },
+  {
+    "enunciado": "Qual cidade sediou os Jogos Olímpicos de 2016?",
+    "alternativas": ["Tóquio", "Londres", "Rio de Janeiro", "Pequim"],
+    "resposta_correta": "Rio de Janeiro"
+  },
+  {
+    "enunciado": "Quantos lados tem um hexágono?",
+    "alternativas": ["5", "6", "7", "8"],
+    "resposta_correta": "6"
+  },
+  {
+    "enunciado": "Qual é o metal líquido à temperatura ambiente?",
+    "alternativas": ["Cobre", "Alumínio", "Mercúrio", "Chumbo"],
+    "resposta_correta": "Mercúrio"
+  },
+  {
+    "enunciado": "Em que ano o homem pisou na Lua pela primeira vez?",
+    "alternativas": ["1965", "1969", "1972", "1958"],
+    "resposta_correta": "1969"
+  },
+  {
+    "enunciado": "Qual o nome da inteligência artificial no jogo 'Halo' que acompanha o Master Chief?",
+    "alternativas": ["GLaDOS", "Cortana", "Siri", "Alexa"],
+    "resposta_correta": "Cortana"
+  },
+  {
+    "enunciado": "Qual destes pintores é famoso por ter cortado um pedaço da própria orelha?",
+    "alternativas": ["Claude Monet", "Salvador Dalí", "Pablo Picasso", "Vincent van Gogh"],
+    "resposta_correta": "Vincent van Gogh"
+  },
+  {
+    "enunciado": "A que se refere o 'HTTP' em um endereço da web?",
+    "alternativas": ["HyperText Transfer Protocol", "High-Throughput Transfer Protocol", "Home Terminal Transfer Point", "HyperText Translation Protocol"],
+    "resposta_correta": "HyperText Transfer Protocol"
+  },
+  {
+    "enunciado": "Qual é o maior oceano do mundo?",
+    "alternativas": ["Atlântico", "Índico", "Ártico", "Pacífico"],
+    "resposta_correta": "Pacífico"
+  },
+  {
+    "enunciado": "Na série 'Stranger Things', qual o nome da cidade onde a história se passa?",
+    "alternativas": ["Hawkins", "Riverdale", "Sunnydale", "Hill Valley"],
+    "resposta_correta": "Hawkins"
+  },
+  {
+    "enunciado": "Qual o significado da sigla 'CPU' em um computador?",
+    "alternativas": ["Central Processing Unit", "Computer Personal Unit", "Central Power Unit", "Core Processing aUtonomous"],
+    "resposta_correta": "Central Processing Unit"
+  },
+  {
+    "enunciado": "Quem dirigiu o filme 'A Origem' (Inception) de 2010?",
+    "alternativas": ["Steven Spielberg", "James Cameron", "Christopher Nolan", "Quentin Tarantino"],
+    "resposta_correta": "Christopher Nolan"
+  },
+  {
+    "enunciado": "Qual país é conhecido como a 'Terra do Sol Nascente'?",
+    "alternativas": ["China", "Coreia do Sul", "Japão", "Tailândia"],
+    "resposta_correta": "Japão"
+  },
+  {
+    "enunciado": "Qual o nome do super-herói bilionário da Marvel que usa uma armadura de alta tecnologia?",
+    "alternativas": ["Capitão América", "Thor", "Homem-Aranha", "Homem de Ferro"],
+    "resposta_correta": "Homem de Ferro"
+  },
+  {
+    "enunciado": "Qual destes animais é um mamífero que põe ovos?",
+    "alternativas": ["Pinguim", "Ornitorrinco", "Morcego", "Avestruz"],
+    "resposta_correta": "Ornitorrinco"
+  },
+  {
+    "enunciado": "Qual a capital da Austrália?",
+    "alternativas": ["Sydney", "Melbourne", "Camberra", "Perth"],
+    "resposta_correta": "Camberra"
+  }
+]
