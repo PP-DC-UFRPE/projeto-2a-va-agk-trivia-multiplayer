@@ -49,7 +49,6 @@ type Placar struct {
 var players = make(map[net.Conn]*Player)
 
 //funcao para carregar perguntas do arquivo JSON
-// Limite é o número máximo de perguntas a serem carregadas
 func carregarPerguntasDoArquivo(caminho string, limite int) ([]Pergunta, error) {
 	//Lê o arquivo JSON
 	arquivoBytes, err := os.ReadFile(caminho)

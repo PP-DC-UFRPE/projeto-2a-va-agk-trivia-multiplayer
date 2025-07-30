@@ -1,102 +1,102 @@
 [
   {
     "enunciado": "Qual o planeta mais próximo do Sol?",
-    "alternativas": ["Vênus", "Marte", "Mercúrio", "Terra"],
-    "resposta_correta": "Mercúrio"
+    "alternativas": ["A) Vênus", "B) Marte", "C) Mercúrio", "D) Terra"],
+    "resposta_correta": "C"
   },
   {
     "enunciado": "Qual o nome do processo pelo qual as plantas usam a luz do sol para criar seu próprio alimento?",
-    "alternativas": ["Respiração celular", "Transpiração", "Fotossíntese", "Osmose"],
-    "resposta_correta": "Fotossíntese"
+    "alternativas": ["A) Respiração celular", "B) Transpiração", "C) Fotossíntese", "D) Osmose"],
+    "resposta_correta": "C"
   },
   {
     "enunciado": "Quem é o autor da famosa obra 'Dom Quixote'?",
-    "alternativas": ["William Shakespeare", "Dante Alighieri", "Machado de Assis", "Miguel de Cervantes"],
-    "resposta_correta": "Miguel de Cervantes"
+    "alternativas": ["A) William Shakespeare", "B) Dante Alighieri", "C) Machado de Assis", "D) Miguel de Cervantes"],
+    "resposta_correta": "D"
   },
   {
     "enunciado": "No universo de Harry Potter, qual das seguintes opções NÃO é uma das Relíquias da Morte?",
-    "alternativas": ["A Varinha das Varinhas", "A Pedra da Ressurreição", "O Pomo de Ouro", "A Capa da Invisibilidade"],
-    "resposta_correta": "O Pomo de Ouro"
+    "alternativas": ["A) A Varinha das Varinhas", "B) A Pedra da Ressurreição", "C) O Pomo de Ouro", "D) A Capa da Invisibilidade"],
+    "resposta_correta": "C"
   },
   {
     "enunciado": "Qual linguagem de programação foi criada por James Gosling na Sun Microsystems?",
-    "alternativas": ["Python", "C++", "Java", "Go"],
-    "resposta_correta": "Java"
+    "alternativas": ["A) Python", "B) C++", "C) Java", "D) Go"],
+    "resposta_correta": "C"
   },
   {
     "enunciado": "Qual cidade sediou os Jogos Olímpicos de 2016?",
-    "alternativas": ["Tóquio", "Londres", "Rio de Janeiro", "Pequim"],
-    "resposta_correta": "Rio de Janeiro"
+    "alternativas": ["A) Tóquio", "B) Londres", "C) Rio de Janeiro", "D) Pequim"],
+    "resposta_correta": "C"
   },
   {
     "enunciado": "Quantos lados tem um hexágono?",
-    "alternativas": ["5", "6", "7", "8"],
-    "resposta_correta": "6"
+    "alternativas": ["A) 5", "B) 6", "C) 7", "D) 8"],
+    "resposta_correta": "B"
   },
   {
     "enunciado": "Qual é o metal líquido à temperatura ambiente?",
-    "alternativas": ["Cobre", "Alumínio", "Mercúrio", "Chumbo"],
-    "resposta_correta": "Mercúrio"
+    "alternativas": ["A) Cobre", "B) Alumínio", "C) Mercúrio", "D) Chumbo"],
+    "resposta_correta": "C"
   },
   {
     "enunciado": "Em que ano o homem pisou na Lua pela primeira vez?",
-    "alternativas": ["1965", "1969", "1972", "1958"],
-    "resposta_correta": "1969"
+    "alternativas": ["A) 1965", "B) 1969", "C) 1972", "D) 1958"],
+    "resposta_correta": "B"
   },
   {
     "enunciado": "Qual o nome da inteligência artificial no jogo 'Halo' que acompanha o Master Chief?",
-    "alternativas": ["GLaDOS", "Cortana", "Siri", "Alexa"],
-    "resposta_correta": "Cortana"
+    "alternativas": ["A) GLaDOS", "B) Cortana", "C) Siri", "D) Alexa"],
+    "resposta_correta": "B"
   },
   {
     "enunciado": "Qual destes pintores é famoso por ter cortado um pedaço da própria orelha?",
-    "alternativas": ["Claude Monet", "Salvador Dalí", "Pablo Picasso", "Vincent van Gogh"],
-    "resposta_correta": "Vincent van Gogh"
+    "alternativas": ["A) Claude Monet", "B) Salvador Dalí", "C) Pablo Picasso", "D) Vincent van Gogh"],
+    "resposta_correta": "D"
   },
   {
     "enunciado": "A que se refere o 'HTTP' em um endereço da web?",
-    "alternativas": ["HyperText Transfer Protocol", "High-Throughput Transfer Protocol", "Home Terminal Transfer Point", "HyperText Translation Protocol"],
-    "resposta_correta": "HyperText Transfer Protocol"
+    "alternativas": ["A) HyperText Transfer Protocol", "B) High-Throughput Transfer Protocol", "C) Home Terminal Transfer Point", "D) HyperText Translation Protocol"],
+    "resposta_correta": "A"
   },
   {
     "enunciado": "Qual é o maior oceano do mundo?",
-    "alternativas": ["Atlântico", "Índico", "Ártico", "Pacífico"],
-    "resposta_correta": "Pacífico"
+    "alternativas": ["A) Atlântico", "B) Índico", "C) Ártico", "D) Pacífico"],
+    "resposta_correta": "D"
   },
   {
     "enunciado": "Na série 'Stranger Things', qual o nome da cidade onde a história se passa?",
-    "alternativas": ["Hawkins", "Riverdale", "Sunnydale", "Hill Valley"],
-    "resposta_correta": "Hawkins"
+    "alternativas": ["A) Hawkins", "B) Riverdale", "C) Sunnydale", "D) Hill Valley"],
+    "resposta_correta": "A"
   },
   {
     "enunciado": "Qual o significado da sigla 'CPU' em um computador?",
-    "alternativas": ["Central Processing Unit", "Computer Personal Unit", "Central Power Unit", "Core Processing aUtonomous"],
-    "resposta_correta": "Central Processing Unit"
+    "alternativas": ["A) Central Processing Unit", "B) Computer Personal Unit", "C) Central Power Unit", "D) Core Processing aUtonomous"],
+    "resposta_correta": "A"
   },
   {
     "enunciado": "Quem dirigiu o filme 'A Origem' (Inception) de 2010?",
-    "alternativas": ["Steven Spielberg", "James Cameron", "Christopher Nolan", "Quentin Tarantino"],
-    "resposta_correta": "Christopher Nolan"
+    "alternativas": ["A) Steven Spielberg", "B) James Cameron", "C) Christopher Nolan", "D) Quentin Tarantino"],
+    "resposta_correta": "C"
   },
   {
     "enunciado": "Qual país é conhecido como a 'Terra do Sol Nascente'?",
-    "alternativas": ["China", "Coreia do Sul", "Japão", "Tailândia"],
-    "resposta_correta": "Japão"
+    "alternativas": ["A) China", "B) Coreia do Sul", "C) Japão", "D) Tailândia"],
+    "resposta_correta": "C"
   },
   {
     "enunciado": "Qual o nome do super-herói bilionário da Marvel que usa uma armadura de alta tecnologia?",
-    "alternativas": ["Capitão América", "Thor", "Homem-Aranha", "Homem de Ferro"],
-    "resposta_correta": "Homem de Ferro"
+    "alternativas": ["A) Capitão América", "B) Thor", "C) Homem-Aranha", "D) Homem de Ferro"],
+    "resposta_correta": "D"
   },
   {
     "enunciado": "Qual destes animais é um mamífero que põe ovos?",
-    "alternativas": ["Pinguim", "Ornitorrinco", "Morcego", "Avestruz"],
-    "resposta_correta": "Ornitorrinco"
+    "alternativas": ["A) Pinguim", "B) Ornitorrinco", "C) Morcego", "D) Avestruz"],
+    "resposta_correta": "B"
   },
   {
     "enunciado": "Qual a capital da Austrália?",
-    "alternativas": ["Sydney", "Melbourne", "Camberra", "Perth"],
-    "resposta_correta": "Camberra"
+    "alternativas": ["A) Sydney", "B) Melbourne", "C) Camberra", "D) Perth"],
+    "resposta_correta": "C"
   }
 ]
