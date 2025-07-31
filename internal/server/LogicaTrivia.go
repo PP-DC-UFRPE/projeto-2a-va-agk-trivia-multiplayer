@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"sort"
+	"sort" //Funcionalidades de ordenação de dados
 	"strings"
 	"time"
 )
