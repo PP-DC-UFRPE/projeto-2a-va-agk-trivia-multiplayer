@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"math/rand"  // Pacote para embaralhar
 	"net"
-	"os"
+	"os" //Funcionalidades I/O
 	"strings"
 	"time"
 	"triviaMultiplayer/internal/server"
@@ -46,7 +46,7 @@ type Placar struct {
 	Pontuacoes []server.Pontuacao `json:"pontuacoes"`
 }
 
-var players = make(map[net.Conn]*Player)
+var players = make(map[net.Conn]*Player) //Constrói um map que armazena todos os jogadores
 
 //funcao para carregar perguntas do arquivo JSON
 func carregarPerguntasDoArquivo(caminho string, limite int) ([]Pergunta, error) {
