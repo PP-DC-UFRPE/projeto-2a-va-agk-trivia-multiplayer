@@ -98,5 +98,15 @@
     "enunciado": "Qual a capital da Austrália?",
     "alternativas": ["A) Sydney", "B) Melbourne", "C) Camberra", "D) Perth"],
     "resposta_correta": "C"
+  },
+  {
+    "enunciado": "Em que ano o Brasil ganhou a sua 3ª Copa do Mundo?",
+    "alternativas": ["A) 1965", "B) 1970", "C) 1994", "D) 2002"],
+    "resposta_correta": "B"
+  },
+  {
+    "enunciado": "O que são goroutines?",
+    "alternativas": ["A) Funções de leve execução que permitem simultaneidade", "B) Variáveis que armazenam o endereço de outras variáveis", "C) São dados compostos que organizam variáveis", "D) Matrizes de tamanho dinâmico"],
+    "resposta_correta": "A"
   }
 ]
