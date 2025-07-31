@@ -27,7 +27,8 @@ Este projeto é um jogo de perguntas e respostas, onde dois ou mais jogadores co
 * O jogador digita 'A', 'B', 'C' ou 'D' e envia a resposta ao servidor.
 
 ### Pontuação
-* Os pontos são calculados com base na ordem de chegada das respostas corretas.
+* Os pontos são calculados com base na ordem de chegada das respostas corretas, que é obtida através do momento milimétrico em que cada jogador respondeu.
+
 * O primeiro jogador que acertou recebe 100 pontos, e os seguintes recebem metade da pontuação do anteerior.
 * O placar atualizado e transmitido ao fim de cada rodada.
 
