@@ -12,7 +12,7 @@ import (
 	"triviaMultiplayer/internal/server"
 )
 
-// Estrutura para carregar as perguntas do arquivo perguntas.json
+// struct para carregar as perguntas do arquivo perguntas.json
 type PerguntaJSON struct {
     Enunciado    string   `json:"enunciado"`
     Alternativas []string `json:"alternativas"`
@@ -118,71 +118,15 @@ func getIpLocal() string {
 	return "localhost"
 }
 
-func main() {
-	listener, err := net.Listen("tcp", ":8080")
-	if err != nil {
-		panic(err)
-	}
-	defer listener.Close()
-	fmt.Printf("Servidor ouvindo em %s:8080\n", getIpLocal())
-
-	go func() {
-		for {
-			conn, err := listener.Accept()
-			if err != nil {
-				fmt.Println("Erro ao aceitar conexão:", err)
-				continue
-			}
-			go handleCliente(conn)
-		}
-	}()
-
-	fmt.Println("\nO servidor está pronto para aceitar jogadores.")
-	fmt.Println("Pressione ENTER a qualquer momento para iniciar a partida com os jogadores conectados.")
-	bufio.NewReader(os.Stdin).ReadBytes('\n')
-
-	if len(players) == 0 {
-		fmt.Println("Nenhum jogador conectado. Encerrando o servidor.")
-		return
-	}
-
-	fmt.Printf("\nO jogo vai começar com %d jogador(es)!\n", len(players))
-	broadcast([]byte("{\"tipo\":\"inicio_jogo\"}\n"))
-	time.Sleep(1 * time.Second)
-
-	// --- CARREGANDO AS PERGUNTAS DO ARQUIVO ---
-	perguntas, err := carregarPerguntasDoArquivo("perguntas.json", 5) // Limite de 5 perguntas
-	if err != nil {
-		fmt.Printf("Erro fatal ao carregar perguntas: %v\n", err)
-		return
-	}
-	fmt.Printf("Jogo iniciado com %d perguntas aleatórias.\n", len(perguntas))
-	time.Sleep(2 * time.Second)
-
-	for _, pergunta := range perguntas {
-		qBytes, _ := json.Marshal(pergunta)
-		broadcast(append(qBytes, '\n'))
-
-		respostas := coletarRespostas(10 * time.Second)
-
-		pontos := server.CalcularPontos(respostas, pergunta.OpcaoCorreta)
-		for _, ponto := range pontos {
-			for _, player := range players {
-				if player.Nome == ponto.Player {
-					player.pontuacao += ponto.Pontos
-				}
-			}
-		}
-
-		enviarPlacar()
-		time.Sleep(5 * time.Second)
-	}
-
-	fmt.Println("Fim de jogo!")
-	enviarPlacar()
+func contagemRegressiva(valor int) {
+    for i := valor; i > 0; i-- {
+        broadcast([]byte(fmt.Sprintf("{\"tipo\":\"contagem_regressiva\",\"valor\":%d}\n", i)))
+        fmt.Printf("Começando em %d...\n", i)
+        time.Sleep(1 * time.Second)
+    }
+    broadcast([]byte("{\"tipo\":\"contagem_regressiva\",\"valor\":0}\n"))
 }
 
-// coletarRespostas e enviarPlacar permanecem os mesmos
 func coletarRespostas(duration time.Duration) []server.Resposta {
 	var respostas []server.Resposta
 	deadline := time.Now().Add(duration)
@@ -235,4 +179,71 @@ func enviarPlacar() {
 	placar := Placar{Tipo: "placar", Pontuacoes: pontuacaoAtual}
 	sbBytes, _ := json.Marshal(placar)
 	broadcast(append(sbBytes, '\n'))
+}
+
+func main() {
+	listener, err := net.Listen("tcp", ":8080")
+	if err != nil {
+		panic(err)
+	}
+	defer listener.Close()
+	fmt.Printf("Servidor ouvindo em %s:8080\n", getIpLocal())
+
+	go func() {
+		for {
+			conn, err := listener.Accept()
+			if err != nil {
+				fmt.Println("Erro ao aceitar conexão:", err)
+				continue
+			}
+			go handleCliente(conn)
+		}
+	}()
+
+	fmt.Println("\nO servidor está pronto para aceitar jogadores.")
+	fmt.Println("Pressione ENTER a qualquer momento para iniciar a partida com os jogadores conectados.")
+	bufio.NewReader(os.Stdin).ReadBytes('\n')
+
+	if len(players) == 0 {
+		fmt.Println("Nenhum jogador conectado. Encerrando o servidor.")
+		return
+	}
+
+	fmt.Printf("\nO jogo vai começar com %d jogador(es)!\n", len(players))
+	broadcast([]byte("{\"tipo\":\"inicio_jogo\"}\n"))
+	time.Sleep(1 * time.Second)
+
+	// --- CARREGANDO AS PERGUNTAS DO ARQUIVO ---
+	perguntas, err := carregarPerguntasDoArquivo("perguntas.json", 5) // Limite de 5 perguntas
+	if err != nil {
+		fmt.Printf("Erro fatal ao carregar perguntas: %v\n", err)
+		return
+	}
+	fmt.Printf("Jogo iniciado com %d perguntas aleatórias.\n", len(perguntas))
+	time.Sleep(2 * time.Second)
+
+	// contagem regressiva antes de iniciar o jogo
+    contagemRegressiva(3)
+
+	for _, pergunta := range perguntas {
+		qBytes, _ := json.Marshal(pergunta)
+		broadcast(append(qBytes, '\n'))
+
+		respostas := coletarRespostas(10 * time.Second)
+
+		pontos := server.CalcularPontos(respostas, pergunta.OpcaoCorreta)
+		for _, ponto := range pontos {
+			for _, player := range players {
+				if player.Nome == ponto.Player {
+					player.pontuacao += ponto.Pontos
+				}
+			}
+		}
+
+		enviarPlacar()
+		time.Sleep(5 * time.Second)
+	}
+
+	fmt.Println("Fim de jogo!")
+	enviarPlacar()
 }

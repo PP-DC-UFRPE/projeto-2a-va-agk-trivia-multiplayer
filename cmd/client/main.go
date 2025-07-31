@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"strings"
+	"time"
 )
 
 type Mensagem struct {
@@ -66,6 +67,14 @@ func main() {
 			json.Unmarshal(msg, &pergunta)
 
 			fmt.Printf("\n📢 Pergunta %d: %s\n", pergunta.ID, pergunta.Texto)
+
+			// contagem regressiva antes de responder
+			for i := 3; i > 0; i-- {
+				fmt.Printf("%d, ", i)
+				time.Sleep(1 * time.Second)
+			}
+			fmt.Println("\nAlternativas:")
+
 			for _, opt := range pergunta.Opcoes {
 				fmt.Println(opt)
 			}
@@ -91,6 +100,19 @@ func main() {
 				fmt.Printf("%s: %d pontos\n", score.Player, score.Pontos)
 			}
 			fmt.Println("--------------")
+
+		case "contagem_regressiva":
+			var data struct {
+                Valor int `json:"valor"`
+            }
+
+            if err := json.Unmarshal(msg, &data); err == nil {
+                if data.Valor > 0 {
+                    fmt.Printf("\n⏳%d...", data.Valor)
+                } else {
+                    fmt.Println("\n🚦Vai!")
+                }
+            }
 		}
 	}
 }
