@@ -3,7 +3,7 @@ package server
 import (
 	"encoding/json"
 	"fmt"
-	"os"
+	"os" //Gerencia arquivos
 	"sort" //Funcionalidades de ordenação de dados
 	"strings"
 	"time"
