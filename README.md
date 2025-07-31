@@ -1,5 +1,14 @@
-# projeto-2a-va-agk
-projeto-2a-va-agk created by GitHub Classroom
+# AGGK Trivia Multiplayer
+
+## Membros da Equipe:
+* Álvaro Ribeiro;
+* Gabriel Felipe;
+* Guilherme Oliveira;
+* Kleber Barbosa.
+
+## Descrição
+
+Este projeto é um jogo de perguntas e respostas, onde dois ou mais jogadores conectados recebem simultaneamente perguntas acompanhadas de quatro alternativas de resposta, e precisam responder corretamente antes do fm da contagem regressiva para receber uma pontuação, que varia de acordo com quão rápida foi a resposta em relação aos outros jogadores, e apresenta um placar ordenado com todos os jogadores e suas pontuações. O programa apresenta uma interface CLI simples para cada jogador, e utiliza goroutines e canais(concorrência visível).
 
 # como executar
 1. abirir o bin/trivia-server.exe
