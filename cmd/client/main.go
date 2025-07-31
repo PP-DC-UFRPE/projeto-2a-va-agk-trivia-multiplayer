@@ -5,7 +5,7 @@ import (
 	"encoding/json"//Converte de JSON para Go e vice-versa
 	"fmt" //Formata textos
 	"net" //Permite criar clientes e servidores, lidar com endereços IP e usar protocolos como TCP
-	"os" //Possibilita compatiblidade entre sistemas operacionais e uso de I/O 
+	"os" //Uso de I/O 
 	"strings" //Funcionalidades para manipular Strings
 	"time" //Dá acesso a funções que utilizam tempo
 )
