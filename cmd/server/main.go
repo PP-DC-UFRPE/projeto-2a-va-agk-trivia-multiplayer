@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"math/rand"  // Pacote para embaralhar
 	"net"
-	"os" //Funcionalidades I/O
+	"os" //Gerenciamento de arquivos 
 	"strings"
 	"time"
 	"triviaMultiplayer/internal/server"
