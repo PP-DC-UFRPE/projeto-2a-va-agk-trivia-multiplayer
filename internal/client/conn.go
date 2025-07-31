@@ -15,6 +15,7 @@ type Client struct {
     reader *bufio.Reader
 }
 
+//Função construtora de Clients
 func NewClient(address string) (*Client, error) {
     conn, err := net.Dial("tcp", address)
     if err != nil {
@@ -27,15 +28,21 @@ func NewClient(address string) (*Client, error) {
     }, nil
 }
 
+
+//MÉTODOS DO CLIENTE
+
+//Encerra a conexão 
 func (c *Client) Close() error {
     return c.conn.Close()
 }
 
+//Envia mensagem
 func (c *Client) SendMessage(message string) error {
     _, err := c.conn.Write([]byte(message + "\n"))
     return err
 }
 
+//Lê mensagem
 func (c *Client) ReadMessage() (string, error) {
     message, err := c.reader.ReadString('\n')
     if err != nil {
@@ -44,6 +51,7 @@ func (c *Client) ReadMessage() (string, error) {
     return strings.TrimSpace(message), nil
 }
 
+//Verifica se a conexão ainda está ativa
 func (c *Client) PingPong() error {
     // Envia ping
     if err := c.SendMessage("ping"); err != nil {
@@ -63,6 +71,7 @@ func (c *Client) PingPong() error {
     return nil
 }
 
+//Automatizador da func PingPong
 func (c *Client) StartPingPongLoop(interval time.Duration) {
     ticker := time.NewTicker(interval)
     defer ticker.Stop()
