@@ -88,6 +88,7 @@ func carregarPerguntasDoArquivo(caminho string, limite int) ([]Pergunta, error) 
 	return perguntasJogo, nil
 }
 
+//Registrar jogador
 func handleCliente(conn net.Conn) {
 	conn.Write([]byte("{\"tipo\":\"nome_requisicao\"}\n"))
 	nome, _ := bufio.NewReader(conn).ReadString('\n')
@@ -97,12 +98,14 @@ func handleCliente(conn net.Conn) {
 	fmt.Printf("%s conectou-se. (%d jogadores conectados)\n", nome, len(players))
 }
 
+//Transmite as mensagens para os jogadores 
 func broadcast(mensagem []byte) {
 	for _, player := range players {
 		player.Conn.Write(mensagem)
 	}
 }
 
+//Busca o endereço IP do ADM
 func getIpLocal() string {
 	enderecos, err := net.InterfaceAddrs()
 	if err != nil {
@@ -118,6 +121,7 @@ func getIpLocal() string {
 	return "localhost"
 }
 
+//Realiza a contagem regressiva para os jogadores 
 func contagemRegressiva(valor int) {
     for i := valor; i > 0; i-- {
         broadcast([]byte(fmt.Sprintf("{\"tipo\":\"contagem_regressiva\",\"valor\":%d}\n", i)))
@@ -127,6 +131,7 @@ func contagemRegressiva(valor int) {
     broadcast([]byte("{\"tipo\":\"contagem_regressiva\",\"valor\":0}\n"))
 }
 
+//Coleta as respostas dos jogadores
 func coletarRespostas(duration time.Duration) []server.Resposta {
 	var respostas []server.Resposta
 	deadline := time.Now().Add(duration)
@@ -170,6 +175,7 @@ func coletarRespostas(duration time.Duration) []server.Resposta {
 	return respostas
 }
 
+//Envia placar aos jogadores
 func enviarPlacar() {
 	var pontuacaoAtual []server.Pontuacao
 	for _, player := range players {
@@ -181,14 +187,18 @@ func enviarPlacar() {
 	broadcast(append(sbBytes, '\n'))
 }
 
+//Inicializa o servidor
 func main() {
 	listener, err := net.Listen("tcp", ":8080")
 	if err != nil {
 		panic(err)
 	}
+
+//Programa seu encerramento 
 	defer listener.Close()
 	fmt.Printf("Servidor ouvindo em %s:8080\n", getIpLocal())
 
+//Gerencia a entrada de usuários
 	go func() {
 		for {
 			conn, err := listener.Accept()
@@ -213,7 +223,7 @@ func main() {
 	broadcast([]byte("{\"tipo\":\"inicio_jogo\"}\n"))
 	time.Sleep(1 * time.Second)
 
-	// --- CARREGANDO AS PERGUNTAS DO ARQUIVO ---
+	//Carrega as perguntas do arquivo
 	perguntas, err := carregarPerguntasDoArquivo("perguntas.json", 5) // Limite de 5 perguntas
 	if err != nil {
 		fmt.Printf("Erro fatal ao carregar perguntas: %v\n", err)
