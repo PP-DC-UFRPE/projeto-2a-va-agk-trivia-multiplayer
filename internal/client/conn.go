@@ -4,83 +4,50 @@ package client
 
 import (
     "bufio"
-    "fmt"
+    "encoding/json"
     "net"
-    "strings"
-    "time"
 )
 
-type Client struct {
-    conn   net.Conn
-    reader *bufio.Reader
+// ConnClient encapsula a conexão e o writer/reader
+type ConnClient struct {
+    Conn   net.Conn
+    Reader *bufio.Reader
 }
 
-//Função construtora de Clients
-func NewClient(address string) (*Client, error) {
-    conn, err := net.Dial("tcp", address)
+// NovaConnClient cria uma nova conexão e retorna a struct
+func NovaConnClient(endereco string) (*ConnClient, error) {
+    conn, err := net.Dial("tcp", endereco)
     if err != nil {
-        return nil, fmt.Errorf("erro ao conectar: %v", err)
+        return nil, err
     }
-    
-    return &Client{
-        conn:   conn,
-        reader: bufio.NewReader(conn),
+    return &ConnClient{
+        Conn:   conn,
+        Reader: bufio.NewReader(conn),
     }, nil
 }
 
-
-//MÉTODOS DO CLIENTE
-
-//Encerra a conexão 
-func (c *Client) Close() error {
-    return c.conn.Close()
-}
-
-//Envia mensagem
-func (c *Client) SendMessage(message string) error {
-    _, err := c.conn.Write([]byte(message + "\n"))
+// EnviaJSON envia um objeto como JSON para o servidor
+func (c *ConnClient) EnviarJSON(msg interface{}) error {
+    bytes, err := json.Marshal(msg)
+    if err != nil {
+        return err
+    }
+    _, err = c.Conn.Write(append(bytes, '\n'))
     return err
 }
 
-//Lê mensagem
-func (c *Client) ReadMessage() (string, error) {
-    message, err := c.reader.ReadString('\n')
+// RecebeJSON lê uma linha e faz o unmarshal para o objeto passado
+func (c *ConnClient) ReceberJSON(dest interface{}) error {
+    line, err := c.Reader.ReadBytes('\n')
     if err != nil {
-        return "", err
+        return err
     }
-    return strings.TrimSpace(message), nil
+    return json.Unmarshal(line, dest)
 }
 
-//Verifica se a conexão ainda está ativa
-func (c *Client) PingPong() error {
-    // Envia ping
-    if err := c.SendMessage("ping"); err != nil {
-        return fmt.Errorf("erro ao enviar ping: %v", err)
-    }
-    
-    // Lê resposta
-    response, err := c.ReadMessage()
-    if err != nil {
-        return fmt.Errorf("erro ao ler resposta: %v", err)
-    }
-    
-    if response != "pong" {
-        return fmt.Errorf("resposta inesperada: %s", response)
-    }
-    
-    return nil
+// Fecha a conexão
+func (c *ConnClient) Fechar() error {
+    return c.Conn.Close()
 }
 
-//Automatizador da func PingPong
-func (c *Client) StartPingPongLoop(interval time.Duration) {
-    ticker := time.NewTicker(interval)
-    defer ticker.Stop()
-    
-    for range ticker.C {
-        if err := c.PingPong(); err != nil {
-            fmt.Printf("Erro no ping/pong: %v\n", err)
-            break
-        }
-        fmt.Println("Ping/Pong bem-sucedido")
-    }
-}
+

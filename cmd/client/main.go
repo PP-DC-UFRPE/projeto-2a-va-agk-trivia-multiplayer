@@ -1,10 +1,8 @@
 package main
 
 import (
-	"bufio"
 	"encoding/json"
 	"fmt"
-	"net"
 	"strings"
 	"sync" // Pacote para Mutex
 	"triviaMultiplayer/internal/client"
@@ -39,81 +37,76 @@ var gameState GameState
 var perguntaDisponivel = make(chan struct{})
 
 // lerServidor lida com todas as mensagens recebidas do servidor
-func lerServidor(conn net.Conn, done chan<- struct{}) {
-	// Garante que o canal 'done' seja fechado quando a função retornar,
-	// sinalizando para a main goroutine que a conexão foi perdida.
-	defer close(done)
-	reader := bufio.NewReader(conn)
+func lerServidor(conn *client.ConnClient, done chan<- struct{}) {
+    defer close(done)
 
-	for {
-		msg, err := reader.ReadBytes('\n')
-		if err != nil {
-			client.MostraMensagem("\nConexão perdida com o servidor. Pressione ENTER para sair.")
-			return // Encerra a goroutine
-		}
+    for {
+        // Lê a mensagem bruta
+        var rawMsg map[string]interface{}
+        err := conn.ReceberJSON(&rawMsg)
+        if err != nil {
+            client.MostraMensagem("\nConexão perdida com o servidor. Pressione ENTER para sair.")
+            return
+        }
 
-		var mensagemBase Mensagem
-		if err := json.Unmarshal(msg, &mensagemBase); err != nil {
-			continue
-		}
+        tipo, _ := rawMsg["tipo"].(string)
+        switch tipo {
+        case "nome_requisicao":
+            // A outra goroutine vai lidar com o envio do nome
 
-		// Processa a mensagem com base no tipo
-		switch mensagemBase.Tipo {
-		case "nome_requisicao":
-			// A outra goroutine vai lidar com o envio do nome
+        case "pergunta":
+            // Converte o rawMsg para JSON e depois para Pergunta
+            bytes, _ := json.Marshal(rawMsg)
+            var pergunta Pergunta
+            _ = json.Unmarshal(bytes, &pergunta)
 
-		case "pergunta":
-			var pergunta Pergunta
-			json.Unmarshal(msg, &pergunta)
+            gameState.mu.Lock()
+            gameState.currentQuestionID = pergunta.ID
+            gameState.mu.Unlock()
 
-			// Trava o mutex para atualizar o ID da pergunta de forma segura
-			gameState.mu.Lock()
-			gameState.currentQuestionID = pergunta.ID
-			gameState.mu.Unlock()
+            client.MostraMensagem(fmt.Sprintf("📢 Pergunta %d: %s\n", pergunta.ID, pergunta.Texto))
+            for _, opt := range pergunta.Opcoes {
+                client.MostraMensagem(opt)
+            }
+            perguntaDisponivel <- struct{}{}
 
-			client.MostraMensagem(fmt.Sprintf("📢 Pergunta %d: %s\n", pergunta.ID, pergunta.Texto))
-			for _, opt := range pergunta.Opcoes {
-				client.MostraMensagem(opt)
-			}
-			perguntaDisponivel <- struct{}{}
+        case "placar":
+            bytes, _ := json.Marshal(rawMsg)
+            var placar Placar
+            _ = json.Unmarshal(bytes, &placar)
+            client.MostraMensagem("\n\n--- PLACAR ---")
+            for _, score := range placar.Pontuacoes {
+                client.MostraMensagem(fmt.Sprintf("%s: %d pontos", score.Player, score.Pontos))
+            }
+            client.MostraMensagem("--------------")
+            client.MostraMensagem("Aguardando próxima pergunta...")
 
-		case "placar":
-			var placar Placar
-			json.Unmarshal(msg, &placar)
-			client.MostraMensagem("\n\n--- PLACAR ---")
-			for _, score := range placar.Pontuacoes {
-				client.MostraMensagem(fmt.Sprintf("%s: %d pontos", score.Player, score.Pontos))
-			}
-			client.MostraMensagem("--------------")
-			client.MostraMensagem("Aguardando próxima pergunta...")
+        case "contagem_regressiva":
+            bytes, _ := json.Marshal(rawMsg)
+            var data struct {
+                Valor int `json:"valor"`
+            }
+            _ = json.Unmarshal(bytes, &data)
+            if data.Valor > 0 {
+                client.MostraMensagem(fmt.Sprintf("\n⏳%d...", data.Valor))
+            } else {
+                client.MostraMensagem("\n🚦Vai!")
+            }
 
-
-		case "contagem_regressiva":
-			var data struct {
-				Valor int `json:"valor"`
-			}
-			if err := json.Unmarshal(msg, &data); err == nil {
-				if data.Valor > 0 {
-					client.MostraMensagem(fmt.Sprintf("\n⏳%d...", data.Valor))
-				} else {
-					client.MostraMensagem("\n🚦Vai!")
-				}
-			}
-		
-		case "inicio_jogo":
-			client.MostraMensagem("\nO JOGO VAI COMEÇAR!")
-		}
-	}
+        case "inicio_jogo":
+            client.MostraMensagem("\nO JOGO VAI COMEÇAR!")
+        }
+    }
 }
 
 // lerUsuario lida com todo o input do teclado do usuário
-func lerUsuario(conn net.Conn) {
+func lerUsuario(conn *client.ConnClient) {
 	isNameSent := false
 
 	for {
 		if !isNameSent {
 			nome := client.PerguntaNome()
-			conn.Write([]byte(nome + "\n"))
+			conn.EnviarJSON(nome)
 			client.MostraMensagem("Aguardando outros jogadores...")
 			isNameSent = true
 			continue
@@ -133,30 +126,29 @@ func lerUsuario(conn net.Conn) {
 			"opcao": strings.ToUpper(resposta),
 		}
 
-		ansBytes, _ := json.Marshal(msg)
-		conn.Write(append(ansBytes, '\n'))
+		conn.EnviarJSON(msg)
 	}
 }
 
 func main() {
     endereco := client.PerguntaIP()
 
-	conn, err := net.Dial("tcp", endereco)
+	connClient, err := client.NovaConnClient(endereco)
 	if err != nil {
 		panic(err)
 	}
 
-	defer conn.Close()
+	defer connClient.Fechar()
 	client.MostraMensagem("Conectado ao servidor.")
 
 	// Canal para sinalizar quando a goroutine de leitura da rede terminar
 	done := make(chan struct{})
 
 	// Inicia a goroutine para ler do servidor
-	go lerServidor(conn, done)
+	go lerServidor(connClient, done)
 
 	// Inicia a goroutine para ler do teclado do usuário
-	go lerUsuario(conn)
+	go lerUsuario(connClient)
 
 	// A função main vai bloquear aqui. Ela só vai continuar (e o programa encerrar)
 	// quando o canal 'done' for fechado pela goroutine lerServidor.
