@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
-	"os"
 	"strings"
 	"sync" // Pacote para Mutex
+	"triviaMultiplayer/internal/client"
 )
 
 // GameState armazena o estado compartilhado entre as goroutines
@@ -36,6 +36,7 @@ type Placar struct {
 
 // gameState é a nossa variável global para o estado compartilhado
 var gameState GameState
+var perguntaDisponivel = make(chan struct{})
 
 // lerServidor lida com todas as mensagens recebidas do servidor
 func lerServidor(conn net.Conn, done chan<- struct{}) {
@@ -47,7 +48,7 @@ func lerServidor(conn net.Conn, done chan<- struct{}) {
 	for {
 		msg, err := reader.ReadBytes('\n')
 		if err != nil {
-			fmt.Println("\nConexão perdida com o servidor. Pressione ENTER para sair.")
+			client.MostraMensagem("\nConexão perdida com o servidor. Pressione ENTER para sair.")
 			return // Encerra a goroutine
 		}
 
@@ -59,7 +60,6 @@ func lerServidor(conn net.Conn, done chan<- struct{}) {
 		// Processa a mensagem com base no tipo
 		switch mensagemBase.Tipo {
 		case "nome_requisicao":
-			fmt.Print("Seu nome: ")
 			// A outra goroutine vai lidar com o envio do nome
 
 		case "pergunta":
@@ -71,21 +71,21 @@ func lerServidor(conn net.Conn, done chan<- struct{}) {
 			gameState.currentQuestionID = pergunta.ID
 			gameState.mu.Unlock()
 
-			fmt.Printf("\n\n📢 Pergunta %d: %s\n", pergunta.ID, pergunta.Texto)
+			client.MostraMensagem(fmt.Sprintf("📢 Pergunta %d: %s\n", pergunta.ID, pergunta.Texto))
 			for _, opt := range pergunta.Opcoes {
-				fmt.Println(opt)
+				client.MostraMensagem(opt)
 			}
-			fmt.Print("Sua resposta (A/B/C/D): ")
+			perguntaDisponivel <- struct{}{}
 
 		case "placar":
 			var placar Placar
 			json.Unmarshal(msg, &placar)
-			fmt.Println("\n\n--- PLACAR ---")
+			client.MostraMensagem("\n\n--- PLACAR ---")
 			for _, score := range placar.Pontuacoes {
-				fmt.Printf("%s: %d pontos\n", score.Player, score.Pontos)
+				client.MostraMensagem(fmt.Sprintf("%s: %d pontos", score.Player, score.Pontos))
 			}
-			fmt.Println("--------------")
-			fmt.Print("Aguardando próxima pergunta...")
+			client.MostraMensagem("--------------")
+			client.MostraMensagem("Aguardando próxima pergunta...")
 
 
 		case "contagem_regressiva":
@@ -94,62 +94,60 @@ func lerServidor(conn net.Conn, done chan<- struct{}) {
 			}
 			if err := json.Unmarshal(msg, &data); err == nil {
 				if data.Valor > 0 {
-					fmt.Printf("\n⏳%d...", data.Valor)
+					client.MostraMensagem(fmt.Sprintf("\n⏳%d...", data.Valor))
 				} else {
-					fmt.Println("\n🚦Vai!")
+					client.MostraMensagem("\n🚦Vai!")
 				}
 			}
 		
 		case "inicio_jogo":
-			fmt.Println("\nO JOGO VAI COMEÇAR!")
+			client.MostraMensagem("\nO JOGO VAI COMEÇAR!")
 		}
 	}
 }
 
 // lerUsuario lida com todo o input do teclado do usuário
 func lerUsuario(conn net.Conn) {
-	reader := bufio.NewReader(os.Stdin)
 	isNameSent := false
 
 	for {
-		input, _ := reader.ReadString('\n')
-		input = strings.TrimSpace(input)
-
 		if !isNameSent {
-			// A primeira coisa que o usuário digita é o nome
-			conn.Write([]byte(input + "\n"))
-			fmt.Println("Aguardando outros jogadores...")
+			nome := client.PerguntaNome()
+			conn.Write([]byte(nome + "\n"))
+			client.MostraMensagem("Aguardando outros jogadores...")
 			isNameSent = true
 			continue
 		}
-		
+
+		<- perguntaDisponivel
 		// Após enviar o nome, todo input é uma resposta de pergunta
+		resposta := client.PerguntaResposta()
+
 		gameState.mu.Lock()
-		currentID := gameState.currentQuestionID
+		idAtual := gameState.currentQuestionID
 		gameState.mu.Unlock()
 
-		resposta := map[string]interface{}{
+		msg := map[string]interface{}{
 			"tipo":  "resposta",
-			"id":    currentID,
-			"opcao": strings.ToUpper(input),
+			"id":    idAtual,
+			"opcao": strings.ToUpper(resposta),
 		}
-		ansBytes, _ := json.Marshal(resposta)
+
+		ansBytes, _ := json.Marshal(msg)
 		conn.Write(append(ansBytes, '\n'))
 	}
 }
 
 func main() {
-	leitor := bufio.NewReader(os.Stdin)
-	fmt.Print("IP do servidor (ex: 127.0.0.1:8080): ")
-	endereco, _ := leitor.ReadString('\n')
-	endereco = strings.TrimSpace(endereco)
+    endereco := client.PerguntaIP()
 
 	conn, err := net.Dial("tcp", endereco)
 	if err != nil {
 		panic(err)
 	}
+
 	defer conn.Close()
-	fmt.Println("Conectado ao servidor.")
+	client.MostraMensagem("Conectado ao servidor.")
 
 	// Canal para sinalizar quando a goroutine de leitura da rede terminar
 	done := make(chan struct{})
