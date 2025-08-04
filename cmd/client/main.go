@@ -6,30 +6,13 @@ import (
 	"strings"
 	"sync" // Pacote para Mutex
 	"triviaMultiplayer/internal/client"
+	"triviaMultiplayer/internal/models"
 )
 
 // GameState armazena o estado compartilhado entre as goroutines
 type GameState struct {
 	mu              sync.Mutex // Protege o acesso ao ID da pergunta
 	currentQuestionID int
-}
-
-// Mensagem genérica para identificar o tipo
-type Mensagem struct {
-	Tipo string `json:"tipo"`
-}
-
-type Pergunta struct {
-	ID     int      `json:"id"`
-	Texto  string   `json:"texto"`
-	Opcoes []string `json:"opcoes"`
-}
-
-type Placar struct {
-	Pontuacoes []struct {
-		Player string `json:"player"`
-		Pontos int    `json:"pontos"`
-	} `json:"pontuacoes"`
 }
 
 // gameState é a nossa variável global para o estado compartilhado
@@ -57,7 +40,7 @@ func lerServidor(conn *client.ConnClient, done chan<- struct{}) {
         case "pergunta":
             // Converte o rawMsg para JSON e depois para Pergunta
             bytes, _ := json.Marshal(rawMsg)
-            var pergunta Pergunta
+            var pergunta models.Pergunta
             _ = json.Unmarshal(bytes, &pergunta)
 
             gameState.mu.Lock()
@@ -72,7 +55,7 @@ func lerServidor(conn *client.ConnClient, done chan<- struct{}) {
 
         case "placar":
             bytes, _ := json.Marshal(rawMsg)
-            var placar Placar
+            var placar models.Placar
             _ = json.Unmarshal(bytes, &placar)
             client.MostraMensagem("\n\n--- PLACAR ---")
             for _, score := range placar.Pontuacoes {

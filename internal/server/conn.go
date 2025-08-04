@@ -8,6 +8,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"triviaMultiplayer/internal/models"
 )
 
 // Jogador representa um jogador conectado
@@ -63,7 +64,7 @@ func (server *ServerJogo) aceitarConnect() {
 		default:
 			conn, err := server.listener.Accept()
 			if err != nil {
-				if strings.Contains(err.Error(), "use of closed network connection") {
+				if strings.Contains(err.Error(), "conexão fechada") {
 					return
 				}
 				fmt.Println("Erro ao aceitar conexão:", err)
@@ -193,12 +194,12 @@ func (server *ServerJogo) AtualizarPontos(nomeJogador string, pontos int) {
 }
 
 // ColetarRespostas coleta respostas dos jogadores por um tempo determinado
-func (server *ServerJogo) ColetarRespostas(duration time.Duration) []Resposta {
+func (server *ServerJogo) ColetarRespostas(duration time.Duration) []models.Resposta {
 	players := server.GetJogadores()
 
-	var respostas []Resposta
+	var respostas []models.Resposta
 	deadline := time.Now().Add(duration)
-	canalResposta := make(chan Resposta, len(players))
+	canalResposta := make(chan models.Resposta, len(players))
 
 	for _, player := range players {
 		go server.lerResposta(player, deadline, canalResposta)
@@ -216,7 +217,7 @@ func (server *ServerJogo) ColetarRespostas(duration time.Duration) []Resposta {
 }
 
 // lerResposta lê a resposta de um jogador específico
-func (server *ServerJogo) lerResposta(jogador *Jogador, deadline time.Time, canal chan<- Resposta) {
+func (server *ServerJogo) lerResposta(jogador *Jogador, deadline time.Time, canal chan<- models.Resposta) {
 	reader := bufio.NewReader(jogador.Conn)
 
 	for {
@@ -241,7 +242,7 @@ func (server *ServerJogo) lerResposta(jogador *Jogador, deadline time.Time, cana
 		}
 
 		if err := json.Unmarshal(msg, &resp); err == nil && resp.Tipo == "resposta" {
-			canal <- Resposta{
+			canal <- models.Resposta{
 				Player: jogador.Nome,
 				Opcao:  resp.Opcao,
 				Tempo:  time.Now(),

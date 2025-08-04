@@ -5,51 +5,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
-	"net"
 	"os"
 	"time"
 	"triviaMultiplayer/internal/server"
+	"triviaMultiplayer/internal/models"
 )
 
 // Constante para o número máximo de jogadores
 const maxJogadores = 10
 
-// struct para carregar as perguntas do arquivo perguntas.json
-type PerguntaJSON struct {
-	Enunciado    string   `json:"enunciado"`
-	Alternativas []string `json:"alternativas"`
-	Resposta     string   `json:"resposta_correta"`
-}
-
-type Player struct {
-	Nome      string
-	Conn      net.Conn
-	pontuacao int
-}
-
-type Pergunta struct {
-	Tipo         string   `json:"tipo"`
-	ID           int      `json:"id"`
-	Texto        string   `json:"texto"`
-	Opcoes       []string `json:"opcoes"`
-	OpcaoCorreta string   `json:"-"`
-}
-
-type Resposta struct {
-	Tipo   string `json:"tipo"`
-	ID     int    `json:"id"`
-	Player string `json:"player"`
-	Opcao  string `json:"opcao"`
-	Tempo  time.Time
-}
-
-type Placar struct {
-	Tipo       string             `json:"tipo"`
-	Pontuacoes []server.Pontuacao `json:"pontuacoes"`
-}
-
-// funcao para carregar perguntas do arquivo JSON
-func carregarPerguntasDoArquivo(caminho string, limite int) ([]Pergunta, error) {
+// função para carregar perguntas do arquivo JSON
+func carregarPerguntasDoArquivo(caminho string, limite int) ([]models.Pergunta, error) {
 	//Lê o arquivo JSON
 	arquivoBytes, err := os.ReadFile(caminho)
 	if err != nil {
@@ -57,8 +23,9 @@ func carregarPerguntasDoArquivo(caminho string, limite int) ([]Pergunta, error) 
 	}
 
 	// Decodifica o JSON para a struct
-	var perguntasJSON []PerguntaJSON
-	if err := json.Unmarshal(arquivoBytes, &perguntasJSON); err != nil {
+	var perguntasJSON []models.PerguntaJSON
+	err = json.Unmarshal(arquivoBytes, &perguntasJSON)
+	if err != nil {
 		return nil, fmt.Errorf("erro ao decodificar o JSON: %w", err)
 	}
 
@@ -74,9 +41,9 @@ func carregarPerguntasDoArquivo(caminho string, limite int) ([]Pergunta, error) 
 	}
 
 	// Converte para o formato de Pergunta do jogo
-	var perguntasJogo []Pergunta
+	var perguntasJogo []models.Pergunta
 	for i, pJSON := range perguntasJSON {
-		perguntasJogo = append(perguntasJogo, Pergunta{
+		perguntasJogo = append(perguntasJogo, models.Pergunta{
 			Tipo:         "pergunta",
 			ID:           i + 1, // ID sequencial
 			Texto:        pJSON.Enunciado,
@@ -99,21 +66,52 @@ func contagemRegressiva(gameServer *server.ServerJogo, valor int) {
 
 func enviarPlacar(gameServer *server.ServerJogo) {
 	players := gameServer.GetJogadores()
-	var pontuacaoAtual []server.Pontuacao
+	var pontuacaoAtual []models.Pontuacao
 
 	for _, player := range players {
-		pontuacaoAtual = append(pontuacaoAtual, server.Pontuacao{
+		pontuacaoAtual = append(pontuacaoAtual, models.Pontuacao{
 			Player: player.Nome,
 			Pontos: player.Pontuacao,
 		})
 	}
 
-	placar := Placar{Tipo: "placar", Pontuacoes: pontuacaoAtual}
+	var pontuacaoModel []models.Pontuacao
+	for _, p := range pontuacaoAtual {
+		pontuacaoModel = append(pontuacaoModel, models.Pontuacao{
+			Player: p.Player,
+			Pontos: p.Pontos,
+		})
+	}
+
+	placar := models.Placar{Tipo: "placar", Pontuacoes: pontuacaoModel}
 	sbBytes, _ := json.Marshal(placar)
 	gameServer.Broadcast(append(sbBytes, '\n'))
 }
 
-// Inicializa o servidor
+func executarJogo(serverJogo *server.ServerJogo, perguntas []models.Pergunta) {
+	// Contagem regressiva
+	contagemRegressiva(serverJogo, 3)
+
+	// Executa cada pergunta
+	for _, pergunta := range perguntas {
+		qBytes, _ := json.Marshal(pergunta)
+		serverJogo.Broadcast(append(qBytes, '\n'))
+
+		respostas := serverJogo.ColetarRespostas(10 * time.Second)
+
+		pontos := server.CalcularPontos(respostas, pergunta.OpcaoCorreta)
+		for _, ponto := range pontos {
+			serverJogo.AtualizarPontos(ponto.Player, ponto.Pontos)
+		}
+
+		enviarPlacar(serverJogo)
+		time.Sleep(5 * time.Second)
+	}
+
+	fmt.Println("Fim de jogo!")
+	enviarPlacar(serverJogo)
+}
+
 func main() {
 	// Cria o servidor de jogo
 	gameServer := server.NovoServer(maxJogadores)
@@ -150,28 +148,4 @@ func main() {
 
 	// Inicia a lógica do jogo usando o gameServer
 	executarJogo(gameServer, perguntas)
-}
-
-func executarJogo(gameServer *server.ServerJogo, perguntas []Pergunta) {
-	// Contagem regressiva
-	contagemRegressiva(gameServer, 3)
-
-	// Executa cada pergunta
-	for _, pergunta := range perguntas {
-		qBytes, _ := json.Marshal(pergunta)
-		gameServer.Broadcast(append(qBytes, '\n'))
-
-		respostas := gameServer.ColetarRespostas(10 * time.Second)
-
-		pontos := server.CalcularPontos(respostas, pergunta.OpcaoCorreta)
-		for _, ponto := range pontos {
-			gameServer.AtualizarPontos(ponto.Player, ponto.Pontos)
-		}
-
-		enviarPlacar(gameServer)
-		time.Sleep(5 * time.Second)
-	}
-
-	fmt.Println("Fim de jogo!")
-	enviarPlacar(gameServer)
 }
