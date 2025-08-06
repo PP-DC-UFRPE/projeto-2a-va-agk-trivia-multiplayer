@@ -1,12 +1,10 @@
 package client
 
 import (
-    "bufio"
-    "fmt"
-    "os"
-    "strings"
+	"fmt"
 )
 
+/*
 // PerguntaIP pergunta o IP do servidor ao usuário
 func PerguntaIP() string {
     leitor := bufio.NewReader(os.Stdin)
@@ -28,8 +26,8 @@ func PerguntaResposta() string {
     resp, _ := leitor.ReadString('\n')
     return strings.TrimSpace(resp)
 }
-
+*/
 // MostraMensagem imprime uma mensagem no terminal
 func MostraMensagem(msg string) {
-    fmt.Println(msg)
+	fmt.Println(msg)
 }

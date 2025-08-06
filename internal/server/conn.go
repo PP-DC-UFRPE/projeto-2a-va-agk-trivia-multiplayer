@@ -39,8 +39,8 @@ func NovoServer(maxJogadores int) *ServerJogo {
 	}
 }
 
-// Iniciar inicia o servidor na porta especificada
-func (server *ServerJogo) Iniciar(porta string) error {
+// Inicia o servidor na porta especificada
+func (server *ServerJogo) IniciarServer(porta string) error {
 	listener, err := net.Listen("tcp", porta)
 	if err != nil {
 		return fmt.Errorf("erro ao iniciar servidor: %w", err)
@@ -74,7 +74,7 @@ func (server *ServerJogo) aceitarConnect() {
 			// Controla o número máximo de jogadores
 			select {
 			case server.semaforo <- struct{}{}:
-				go server.handleCliente(conn)
+				go server.controlaCliente(conn)
 			default:
 				// Servidor lotado
 				conn.Write([]byte("{\"tipo\":\"servidor_lotado\"}\n"))
@@ -84,8 +84,8 @@ func (server *ServerJogo) aceitarConnect() {
 	}
 }
 
-// handleCliente gerencia a conexão de um cliente
-func (server *ServerJogo) handleCliente(conn net.Conn) {
+// Gerencia a conexão de um cliente
+func (server *ServerJogo) controlaCliente(conn net.Conn) {
 	jogador := &Jogador{Conn: conn}
 
 	defer conn.Close()
@@ -121,7 +121,7 @@ func (server *ServerJogo) pedirNome(jogador *Jogador) bool {
 	return true
 }
 
-// addJogador adiciona um jogador à lista de forma thread-safe
+// Adiciona um jogador à lista de forma thread-safe
 func (server *ServerJogo) addJogador(jogador *Jogador) {
 	server.jogadoresMutex.Lock()
 	server.jogadores = append(server.jogadores, jogador)
@@ -132,7 +132,7 @@ func (server *ServerJogo) addJogador(jogador *Jogador) {
 		jogador.Nome, numPlayers, server.maxJogadores)
 }
 
-// removerJogador remove um jogador da lista de forma thread-safe
+// Remove um jogador da lista de forma thread-safe
 func (server *ServerJogo) removerJogador(jogador *Jogador) {
 	server.jogadoresMutex.Lock()
 	for i, p := range server.jogadores {
@@ -141,30 +141,30 @@ func (server *ServerJogo) removerJogador(jogador *Jogador) {
 			break
 		}
 	}
-	numPlayers := len(server.jogadores)
+	numJogadores := len(server.jogadores)
 	server.jogadoresMutex.Unlock()
 
 	if jogador.Nome != "" {
 		fmt.Printf("%s desconectou-se. (%d/%d jogadores restantes)\n",
-			jogador.Nome, numPlayers, server.maxJogadores)
+			jogador.Nome, numJogadores, server.maxJogadores)
 	} else {
 		fmt.Printf("Um jogador desconectou-se antes de se identificar. (%d/%d jogadores restantes)\n",
-			numPlayers, server.maxJogadores)
+			numJogadores, server.maxJogadores)
 	}
 }
 
-// Broadcast envia uma mensagem para todos os jogadores conectados
-func (server *ServerJogo) Broadcast(mensagem []byte) {
+// Envia uma mensagem para todos os jogadores conectados
+func (server *ServerJogo) TransmitirMsg(msg []byte) {
 	server.jogadoresMutex.Lock()
 	defer server.jogadoresMutex.Unlock()
 
 	for _, jogador := range server.jogadores {
-		jogador.Conn.Write(mensagem)
+		jogador.Conn.Write(msg)
 	}
 }
 
-// GetJogadores retorna uma cópia dos jogadores atuais
-func (server *ServerJogo) GetJogadores() []*Jogador {
+// Retorna uma cópia dos jogadores atuais
+func (server *ServerJogo) RetornarJogadores() []*Jogador {
 	server.jogadoresMutex.Lock()
 	defer server.jogadoresMutex.Unlock()
 
@@ -173,8 +173,8 @@ func (server *ServerJogo) GetJogadores() []*Jogador {
 	return players
 }
 
-// GetNumJogadores retorna o número atual de jogadores
-func (server *ServerJogo) GetNumJogadores() int {
+// Retorna o número atual de jogadores
+func (server *ServerJogo) RetornarNumJogadores() int {
 	server.jogadoresMutex.Lock()
 	defer server.jogadoresMutex.Unlock()
 	return len(server.jogadores)
@@ -185,69 +185,66 @@ func (server *ServerJogo) AtualizarPontos(nomeJogador string, pontos int) {
 	server.jogadoresMutex.Lock()
 	defer server.jogadoresMutex.Unlock()
 
-	for _, player := range server.jogadores {
-		if player.Nome == nomeJogador {
-			player.Pontuacao += pontos
+	for _, jogador := range server.jogadores {
+		if jogador.Nome == nomeJogador {
+			jogador.Pontuacao += pontos
 			break
 		}
 	}
 }
 
-// ColetarRespostas coleta respostas dos jogadores por um tempo determinado
-func (server *ServerJogo) ColetarRespostas(duration time.Duration) []models.Resposta {
-	players := server.GetJogadores()
-
+// Coleta respostas e dá feddback
+func (server *ServerJogo) ColetarRespostas(tempo_duracao time.Duration, opcaoCorreta string) []models.Resposta {
+	jogadores := server.RetornarJogadores()
 	var respostas []models.Resposta
-	deadline := time.Now().Add(duration)
-	canalResposta := make(chan models.Resposta, len(players))
+	tempo_limite := time.Now().Add(tempo_duracao)
+	canalResposta := make(chan models.Resposta, len(jogadores))
 
-	for _, player := range players {
-		go server.lerResposta(player, deadline, canalResposta)
+	for _, jogador := range jogadores {
+		// Passa a resposta correta para a goroutine que lê a resposta do jogador
+		go server.lerResposta(jogador, tempo_limite, canalResposta, opcaoCorreta)
 	}
 
-	for len(respostas) < len(players) && time.Now().Before(deadline) {
+	// Continua a coletar respostas até que o tempo se esgote ou todos respondam
+	for i := 0; i < len(jogadores); i++ {
 		select {
 		case resp := <-canalResposta:
 			respostas = append(respostas, resp)
-		case <-time.After(100 * time.Millisecond):
+		case <-time.After(tempo_limite.Sub(time.Now())):
+			return respostas // O tempo acabou
 		}
 	}
-
 	return respostas
 }
 
-// lerResposta lê a resposta de um jogador específico
-func (server *ServerJogo) lerResposta(jogador *Jogador, deadline time.Time, canal chan<- models.Resposta) {
-	reader := bufio.NewReader(jogador.Conn)
+// Verifica a resposta e envia feedback imediato
+func (server *ServerJogo) lerResposta(jogador *Jogador, tempo_limite time.Time, canal chan<- models.Resposta, opcaoCorreta string) {
+	leitor := bufio.NewReader(jogador.Conn)
+	jogador.Conn.SetReadDeadline(tempo_limite)
 
-	for {
-		jogador.Conn.SetReadDeadline(time.Now().Add(1 * time.Second))
-		msg, err := reader.ReadBytes('\n')
+	msg, err := leitor.ReadBytes('\n')
+	if err != nil {
+		return // O jogador não respondeu a tempo
+	}
 
+	var resp struct {
+		Opcao string `json:"opcao"`
+	}
+
+	if err := json.Unmarshal(msg, &resp); err == nil {
+		// Lógica de feedback imediato
+		correta := (resp.Opcao == opcaoCorreta)
+		feedbackMsg := fmt.Sprintf("{\"tipo\":\"resultado_resposta\",\"correta\":%t}\n", correta)
+		_, err := jogador.Conn.Write([]byte(feedbackMsg))
 		if err != nil {
-			if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
-				if time.Now().After(deadline) {
-					return
-				}
-				continue
-			}
-			return
+			fmt.Printf("Erro ao enviar feedback para %s: %v\n", jogador.Nome, err)
 		}
 
-		var resp struct {
-			Tipo   string `json:"tipo"`
-			ID     int    `json:"id"`
-			Player string `json:"player"`
-			Opcao  string `json:"opcao"`
-		}
-
-		if err := json.Unmarshal(msg, &resp); err == nil && resp.Tipo == "resposta" {
-			canal <- models.Resposta{
-				Player: jogador.Nome,
-				Opcao:  resp.Opcao,
-				Tempo:  time.Now(),
-			}
-			return
+		// Envia a resposta para o canal principal para ser usada no cálculo de pontos
+		canal <- models.Resposta{
+			Jogador: jogador.Nome,
+			Opcao:   resp.Opcao,
+			Tempo:   time.Now(),
 		}
 	}
 }
@@ -261,7 +258,7 @@ func (server *ServerJogo) Parar() {
 }
 
 // GetLocalIP busca o endereço IP local
-func GetLocalIP() string {
+func ObterIPlocal() string {
 	enderecos, err := net.InterfaceAddrs()
 	if err != nil {
 		return "localhost"

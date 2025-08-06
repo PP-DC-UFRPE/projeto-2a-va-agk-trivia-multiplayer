@@ -6,8 +6,8 @@ import (
 	"triviaMultiplayer/internal/models"
 )
 
-// CalcularPontos calcula a pontuação com base nas respostas.
-// O primeiro a acertar ganha 100, e cada subsequente ganha metade da pontuação anterior.
+// CalcularPontos calcula a pontuação com base nas respostas
+// O primeiro a acertar ganha 100, e cada subsequente ganha metade da pontuação anterior
 func CalcularPontos(respostas []models.Resposta, opcaoCorreta string) []models.Pontuacao {
 	var respostasCorretas []models.Resposta
 	for _, resp := range respostas {
@@ -26,7 +26,7 @@ func CalcularPontos(respostas []models.Resposta, opcaoCorreta string) []models.P
 	pontosAtuais := 100 // Pontuação inicial
 
 	for _, resp := range respostasCorretas {
-		listaPontos = append(listaPontos, models.Pontuacao{Player: resp.Player, Pontos: pontosAtuais})
+		listaPontos = append(listaPontos, models.Pontuacao{Jogador: resp.Jogador, Pontos: pontosAtuais})
 		pontosAtuais /= 2 // Metade para o próximo
 	}
 

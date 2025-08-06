@@ -7,14 +7,14 @@ import (
 	"math/rand"
 	"os"
 	"time"
-	"triviaMultiplayer/internal/server"
 	"triviaMultiplayer/internal/models"
+	"triviaMultiplayer/internal/server"
 )
 
 // Constante para o número máximo de jogadores
 const maxJogadores = 10
 
-// função para carregar perguntas do arquivo JSON
+// Carrega perguntas do arquivo JSON
 func carregarPerguntasDoArquivo(caminho string, limite int) ([]models.Pergunta, error) {
 	//Lê o arquivo JSON
 	arquivoBytes, err := os.ReadFile(caminho)
@@ -55,97 +55,101 @@ func carregarPerguntasDoArquivo(caminho string, limite int) ([]models.Pergunta, 
 	return perguntasJogo, nil
 }
 
-func contagemRegressiva(gameServer *server.ServerJogo, valor int) {
+// Faz contagem regressiva inicial
+func contagemRegressiva(servidor *server.ServerJogo, valor int) {
 	for i := valor; i > 0; i-- {
-		gameServer.Broadcast([]byte(fmt.Sprintf("{\"tipo\":\"contagem_regressiva\",\"valor\":%d}\n", i)))
+		servidor.TransmitirMsg([]byte(fmt.Sprintf("{\"tipo\":\"contagem_regressiva\",\"valor\":%d}\n", i)))
 		fmt.Printf("Começando em %d...\n", i)
 		time.Sleep(1 * time.Second)
 	}
-	gameServer.Broadcast([]byte("{\"tipo\":\"contagem_regressiva\",\"valor\":0}\n"))
+	servidor.TransmitirMsg([]byte("{\"tipo\":\"contagem_regressiva\",\"valor\":0}\n"))
 }
 
-func enviarPlacar(gameServer *server.ServerJogo) {
-	players := gameServer.GetJogadores()
+// Envia placar
+func enviarPlacar(servidor *server.ServerJogo, tipoMsg string) {
+	jogadores := servidor.RetornarJogadores()
 	var pontuacaoAtual []models.Pontuacao
 
-	for _, player := range players {
+	for _, jogador := range jogadores {
 		pontuacaoAtual = append(pontuacaoAtual, models.Pontuacao{
-			Player: player.Nome,
-			Pontos: player.Pontuacao,
+			Jogador: jogador.Nome,
+			Pontos:  jogador.Pontuacao,
 		})
 	}
 
-	var pontuacaoModel []models.Pontuacao
-	for _, p := range pontuacaoAtual {
-		pontuacaoModel = append(pontuacaoModel, models.Pontuacao{
-			Player: p.Player,
-			Pontos: p.Pontos,
-		})
-	}
-
-	placar := models.Placar{Tipo: "placar", Pontuacoes: pontuacaoModel}
-	sbBytes, _ := json.Marshal(placar)
-	gameServer.Broadcast(append(sbBytes, '\n'))
+	// Usa o tipo de mensagem que foi passado como argumento.
+	placar := models.Placar{Tipo: tipoMsg, Pontuacoes: pontuacaoAtual}
+	placarBytes, _ := json.Marshal(placar)
+	servidor.TransmitirMsg(append(placarBytes, '\n'))
 }
 
-func executarJogo(serverJogo *server.ServerJogo, perguntas []models.Pergunta) {
+func executarJogo(servidor *server.ServerJogo, perguntas []models.Pergunta) {
 	// Contagem regressiva
-	contagemRegressiva(serverJogo, 3)
+	contagemRegressiva(servidor, 3)
 
 	// Executa cada pergunta
-	for _, pergunta := range perguntas {
-		qBytes, _ := json.Marshal(pergunta)
-		serverJogo.Broadcast(append(qBytes, '\n'))
+	for i, pergunta := range perguntas {
+		perguntaBytes, _ := json.Marshal(pergunta)
+		servidor.TransmitirMsg(append(perguntaBytes, '\n'))
 
-		respostas := serverJogo.ColetarRespostas(10 * time.Second)
+		respostas := servidor.ColetarRespostas(10*time.Second, pergunta.OpcaoCorreta)
 
 		pontos := server.CalcularPontos(respostas, pergunta.OpcaoCorreta)
 		for _, ponto := range pontos {
-			serverJogo.AtualizarPontos(ponto.Player, ponto.Pontos)
+			servidor.AtualizarPontos(ponto.Jogador, ponto.Pontos)
 		}
 
-		enviarPlacar(serverJogo)
-		time.Sleep(5 * time.Second)
+		time.Sleep(5 * time.Second) // Pausa para a tela de Resultado da resposta
+
+		//Verifica se não é a última pergunta antes de enviar o placar parcial
+		ultimaPergunta := (i == len(perguntas)-1)
+		if !ultimaPergunta {
+			enviarPlacar(servidor, "placar")
+			time.Sleep(5 * time.Second) // Pausa apenas se não for a última pergunta
+		}
 	}
 
 	fmt.Println("Fim de jogo!")
-	enviarPlacar(serverJogo)
+	// Envia o placar final com o tipo "fim_de_jogo".
+	enviarPlacar(servidor, "fim_de_jogo")
+
+	time.Sleep(1 * time.Second)
 }
 
 func main() {
-	// Cria o servidor de jogo
-	gameServer := server.NovoServer(maxJogadores)
-
-	// Inicia o servidor
-	err := gameServer.Iniciar(":8080")
+	servidor := server.NovoServer(maxJogadores)
+	err := servidor.IniciarServer(":8080") //iniciando o servidor
 	if err != nil {
 		panic(err)
 	}
-	defer gameServer.Parar()
+	defer servidor.Parar()
 
-	fmt.Printf("Servidor ouvindo em %s:8080\n", server.GetLocalIP())
-	fmt.Printf("Aguardando jogadores... (limite de %d)\n", maxJogadores)
+	fmt.Printf("Servidor ouvindo em %s:8080\n", server.ObterIPlocal())
 
-	fmt.Println("\nO servidor está pronto para aceitar jogadores.")
-	fmt.Println("Pressione ENTER a qualquer momento para iniciar a partida com os jogadores conectados.")
-	bufio.NewReader(os.Stdin).ReadBytes('\n')
+	for {
+		fmt.Printf("\n----------------------------------\n")
+		fmt.Printf("Aguardando jogadores... (%d/%d)\n", servidor.RetornarNumJogadores(), maxJogadores)
+		fmt.Println("Pressione ENTER a qualquer momento para iniciar a partida com os jogadores conectados.")
 
-	numPlayers := gameServer.GetNumJogadores()
-	if numPlayers == 0 {
-		fmt.Println("Nenhum jogador conectado. Encerrando o servidor.")
-		return
+		bufio.NewReader(os.Stdin).ReadBytes('\n')
+
+		numPlayers := servidor.RetornarNumJogadores()
+		if numPlayers == 0 {
+			fmt.Println("Nenhum jogador conectado. Aguardando novamente...")
+			continue // Volta para o início do ciclo.
+		}
+
+		fmt.Printf("\nO jogo vai começar com %d jogador(es)!\n", numPlayers)
+		servidor.TransmitirMsg([]byte("{\"tipo\":\"inicio_jogo\"}\n"))
+
+		perguntas, err := carregarPerguntasDoArquivo("perguntas.json", 5) //carrega 5 perguntas do perguntas.json
+		if err != nil {
+			fmt.Printf("Erro ao carregar perguntas: %v\n", err)
+			return
+		}
+
+		executarJogo(servidor, perguntas)
+
+		fmt.Println("Partida finalizada. O servidor está pronto para uma nova rodada.")
 	}
-
-	fmt.Printf("\nO jogo vai começar com %d jogador(es)!\n", numPlayers)
-	gameServer.Broadcast([]byte("{\"tipo\":\"inicio_jogo\"}\n"))
-
-	// Carrega perguntas e inicia o jogo
-	perguntas, err := carregarPerguntasDoArquivo("perguntas.json", 5)
-	if err != nil {
-		fmt.Printf("Erro fatal ao carregar perguntas: %v\n", err)
-		return
-	}
-
-	// Inicia a lógica do jogo usando o gameServer
-	executarJogo(gameServer, perguntas)
 }

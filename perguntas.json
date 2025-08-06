@@ -108,5 +108,60 @@
     "enunciado": "O que são goroutines?",
     "alternativas": ["A) Funções de leve execução que permitem simultaneidade", "B) Variáveis que armazenam o endereço de outras variáveis", "C) São dados compostos que organizam variáveis", "D) Matrizes de tamanho dinâmico"],
     "resposta_correta": "A"
+  },
+  {
+    "enunciado": "Qual banda de rock britânica lançou o álbum 'The Dark Side of the Moon'?",
+    "alternativas": ["A) The Beatles", "B) Led Zeppelin", "C) Pink Floyd", "D) Queen"],
+    "resposta_correta": "C"
+  },
+  {
+    "enunciado": "Qual é o símbolo químico do ouro?",
+    "alternativas": ["A) Ag", "B) Pb", "C) O", "D) Au"],
+    "resposta_correta": "D"
+  },
+  {
+    "enunciado": "Quem pintou a 'Mona Lisa'?",
+    "alternativas": ["A) Michelangelo", "B) Leonardo da Vinci", "C) Rafael", "D) Donatello"],
+    "resposta_correta": "B"
+  },
+  {
+    "enunciado": "Qual o maior país do mundo em área territorial?",
+    "alternativas": ["A) China", "B) Estados Unidos", "C) Canadá", "D) Rússia"],
+    "resposta_correta": "D"
+  },
+  {
+    "enunciado": "Na mitologia grega, quem é o rei dos deuses?",
+    "alternativas": ["A) Hades", "B) Apolo", "C) Zeus", "D) Poseidon"],
+    "resposta_correta": "C"
+  },
+  {
+    "enunciado": "Qual o nome da organela celular responsável pela respiração celular?",
+    "alternativas": ["A) Ribossomo", "B) Mitocôndria", "C) Lisossomo", "D) Complexo de Golgi"],
+    "resposta_correta": "B"
+  },
+  {
+    "enunciado": "Quem foi o primeiro presidente do Brasil?",
+    "alternativas": ["A) Getúlio Vargas", "B) Juscelino Kubitschek", "C) Marechal Deodoro da Fonseca", "D) Prudente de Morais"],
+    "resposta_correta": "C"
+  },
+  {
+    "enunciado": "Em qual série de jogos o protagonista se chama 'Link'?",
+    "alternativas": ["A) Final Fantasy", "B) The Legend of Zelda", "C) Chrono Trigger", "D) Kingdom Hearts"],
+    "resposta_correta": "B"
+  },
+  {
+    "enunciado": "Qual o nome do rio mais longo do mundo?",
+    "alternativas": ["A) Rio Nilo", "B) Rio Amazonas", "C) Rio Yangtzé", "D) Rio Mississippi"],
+    "resposta_correta": "B"
+  },
+  {
+    "enunciado": "Quem escreveu a obra 'Grande Sertão: Veredas'?",
+    "alternativas": ["A) Jorge Amado", "B) Carlos Drummond de Andrade", "C) João Guimarães Rosa", "D) Clarice Lispector"],
+    "resposta_correta": "C"
+  },
+  {
+    "enunciado": "Qual o nome do primeiro filme da saga 'Star Wars' a ser lançado nos cinemas?",
+    "alternativas": ["A) A Ameaça Fantasma", "B) O Império Contra-Ataca", "C) Uma Nova Esperança", "D) O Despertar da Força"],
+    "resposta_correta": "C"
   }
 ]

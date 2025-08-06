@@ -1,5 +1,6 @@
 package main
 
+/*
 import (
 	"encoding/json"
 	"fmt"
@@ -7,6 +8,7 @@ import (
 	"sync" // Pacote para Mutex
 	"triviaMultiplayer/internal/client"
 	"triviaMultiplayer/internal/models"
+
 )
 
 // GameState armazena o estado compartilhado entre as goroutines
@@ -136,4 +138,4 @@ func main() {
 	// A função main vai bloquear aqui. Ela só vai continuar (e o programa encerrar)
 	// quando o canal 'done' for fechado pela goroutine lerServidor.
 	<-done
-}
+}*/

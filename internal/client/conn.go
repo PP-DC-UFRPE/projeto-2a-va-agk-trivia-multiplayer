@@ -3,51 +3,49 @@
 package client
 
 import (
-    "bufio"
-    "encoding/json"
-    "net"
+	"bufio"
+	"encoding/json"
+	"net"
 )
 
-// ConnClient encapsula a conexão e o writer/reader
-type ConnClient struct {
-    Conn   net.Conn
-    Reader *bufio.Reader
+// Encapsula a conexão e o writer/reader
+type ConexCliente struct {
+	Conex  net.Conn
+	Leitor *bufio.Reader
 }
 
-// NovaConnClient cria uma nova conexão e retorna a struct
-func NovaConnClient(endereco string) (*ConnClient, error) {
-    conn, err := net.Dial("tcp", endereco)
-    if err != nil {
-        return nil, err
-    }
-    return &ConnClient{
-        Conn:   conn,
-        Reader: bufio.NewReader(conn),
-    }, nil
+// Cria uma nova conexão e retorna a struct
+func NovaConexCliente(endereco string) (*ConexCliente, error) {
+	conex, err := net.Dial("tcp", endereco)
+	if err != nil {
+		return nil, err
+	}
+	return &ConexCliente{
+		Conex:  conex,
+		Leitor: bufio.NewReader(conex),
+	}, nil
 }
 
-// EnviaJSON envia um objeto como JSON para o servidor
-func (c *ConnClient) EnviarJSON(msg interface{}) error {
-    bytes, err := json.Marshal(msg)
-    if err != nil {
-        return err
-    }
-    _, err = c.Conn.Write(append(bytes, '\n'))
-    return err
+// Envia um objeto como JSON para o servidor
+func (c *ConexCliente) EnviarJSON(msg interface{}) error {
+	bytes, err := json.Marshal(msg)
+	if err != nil {
+		return err
+	}
+	_, err = c.Conex.Write(append(bytes, '\n'))
+	return err
 }
 
-// RecebeJSON lê uma linha e faz o unmarshal para o objeto passado
-func (c *ConnClient) ReceberJSON(dest interface{}) error {
-    line, err := c.Reader.ReadBytes('\n')
-    if err != nil {
-        return err
-    }
-    return json.Unmarshal(line, dest)
+// Lê uma linha e faz o unmarshal para o objeto passado
+func (c *ConexCliente) ReceberJSON(msg interface{}) error { //recebe msg de forma genérica
+	linha, err := c.Leitor.ReadBytes('\n')
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(linha, msg)
 }
 
 // Fecha a conexão
-func (c *ConnClient) Fechar() error {
-    return c.Conn.Close()
+func (c *ConexCliente) Fechar() error {
+	return c.Conex.Close()
 }
-
-
