@@ -40,6 +40,7 @@ Este projeto é um jogo de perguntas e respostas, onde dois ou mais jogadores co
 * 'net.Conn'
 * 'canalResposta'
 * 'perguntas.json'
+* 'placar'
 
 # Sincronização
 
@@ -51,12 +52,18 @@ O servidor utiliza Goroutines para lidar com a concorrência. que são iniciadas
 
 # como executar
 1. abirir o bin/trivia-server.exe
-2. abrir o bin/trivia-cliente.exe
+2. abrir o bin/trivia-client-gui-exe
 3. cliente digitar o ip do server (caso seja no mesmo pc ip será localhost:8080)
-4. esperar pelo menos 2 jogadores para começar o jogo
+4. esperar o ADM do servidor apertar 'enter"
 
 # como gerar novamente executável em caso de atualização e executar
 go build -o bin/trivia-server.exe ./cmd/server \n
-go build -o bin/trivia-client.exe ./cmd/client \n
+go build -o bin/trivia-cliente-gui.exe ./internal/client/main \n
 go run ./cmd/server \n
-go run ./cmd/client \n
+go run .internal/client/main/ui_fyne.go \n
+
+# uso de IA
+
+Usamos o gemini e chatgpt para ensinar conceitos da linguagem, auxiliar na resolução de problemas de integração, e na geração de código na parte de conexão com o servidor e na modificação da interface que antes era CMD e passou a ser Fyne. 
+
+Percentual de uso no código: 40%
